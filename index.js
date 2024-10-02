@@ -199,9 +199,12 @@ function addTask(event) {
 
   //Assign user input to the task object
     const task = {
-      
+      title: event.target.title.value, 
+      description: event.target.description.value,
+      status: "todo",
+      board: activeBoard 
     };
-    const newTask = createNewTask(task);
+    const newTask = createNewTasks(task);
     if (newTask) {
       addTaskToUI(newTask);
       toggleModal(false);
@@ -213,7 +216,8 @@ function addTask(event) {
 
 
 function toggleSidebar(show) {
- 
+ const sidebar = document.getElementById('sidebar');
+ sidebar.style.display = show ? 'block' : 'none';
 }
 
 function toggleTheme() {
