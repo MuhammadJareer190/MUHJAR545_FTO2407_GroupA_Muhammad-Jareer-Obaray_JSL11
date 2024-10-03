@@ -1,6 +1,6 @@
 // TASK: import helper functions from utils
 // TASK: import initialData
-import {getTasks, createNewTasks, patchTasks, putTask, deleteTask} from './utils/taskFunctions.js'
+import { getTasks, createNewTask, patchTask, putTask, deleteTask } from './utils/taskFunctions.js'
 import {initialData} from './initialData.js'
 /*************************************************************************************************************************************************
  * FIX BUGS!!!
@@ -15,18 +15,18 @@ function initializeData() {
     console.log('Data already exists in localStorage');
   }
 }
-
+activeBoard
 // TASK: Get elements from the DOM 
 const elements = {
   headerBoardName: document.getElementById('header-board-name'),
-  columnDivs: querySelectorAll('.column-div'),
-  filterDiv: document.getElementById('filter-div'),
-  createNewTaskBtn: document.getElementById('create-new-task-btn'),
-  modalWindow: document.getElementById('modal-window'),
-  editTaskModal: document.getElementById('edit-task-modal'),
-  hideSideBarBtn: document.getElementById('hide-sidebar-btn'),
-  showSideBarBtn: document.getElementById('show-sidebar-btn'),
-  themeSwitch: document.getElementById('theme-switch'),
+  columnDivs: document.querySelectorAll('.column-div'),
+  filterDiv: document.getElementById('filterDiv'),
+  createNewTaskBtn: document.getElementById('add-new-task-btn'),
+  modalWindow: document.getElementById('new-task-modal-window'),
+  editTaskModal: document.getElementById('edit-task-modal-window'),
+  hideSideBarBtn: document.getElementById('hide-side-bar-btn'),
+  showSideBarBtn: document.getElementById('show-side-bar-btn'),
+  themeSwitch: document.getElementById('switch'),
 }
 
 let activeBoard = ""
@@ -39,7 +39,7 @@ function fetchAndDisplayBoardsAndTasks() {
   displayBoards(boards);
   if (boards.length > 0) {
     const localStorageBoard = JSON.parse(localStorage.getItem("activeBoard"))
-    activeBoard = localStorageBoard ? localStorageBoard :  boards[0]; 
+    activeBoard = localStorageBoard ? localStorageBoard : boards[0] ||  "defaultBoardName"; // changed
     elements.headerBoardName.textContent = activeBoard
     styleActiveBoard(activeBoard)
     refreshTasksUI();
@@ -166,6 +166,7 @@ function setupEventListeners() {
   });
 
   // Show sidebar event listener
+  if (elements.hideSideBarBtn && elements.showSideBarBtn) {
   elements.hideSideBarBtn.onclick = () => toggleSidebar(false); // CHANGED CLICK TO ONCLICK
   elements.showSideBarBtn.onclick = () => toggleSidebar(true); // CHANGED CLICK TO ONCLICK
 
@@ -187,9 +188,9 @@ function setupEventListeners() {
 // Toggles tasks modal
 // Task: Fix bugs
 function toggleModal(show, modal = elements.modalWindow) {
-  modal.style.display = show ? 'block' : 'none'; // FIXED TERNARY OPERATER SYNTAX
+  modal.style.display = show ? 'block' : 'none'; // The syntax is correct; ensure proper usage.
 }
-
+}
 /*************************************************************************************************************************************************
  * COMPLETE FUNCTION CODE
  * **********************************************************************************************************************************************/
@@ -199,12 +200,12 @@ function addTask(event) {
 
   //Assign user input to the task object
     const task = {
-      title: event.target.title.value, 
-      description: event.target.description.value,
-      status: "todo",
+      title: document.getElementById('title-input').value, 
+      description: document.getElementById('desc-input').value,
+      status: document.getElementById('select-status').value,
       board: activeBoard 
     };
-    const newTask = createNewTasks(task);
+    const newTask = createNewTask(task);
     if (newTask) {
       addTaskToUI(newTask);
       toggleModal(false);
@@ -216,41 +217,66 @@ function addTask(event) {
 
 
 function toggleSidebar(show) {
- const sidebar = document.getElementById('sidebar');
- sidebar.style.display = show ? 'block' : 'none';
+  const sidebar = document.getElementById('side-bar-div');
+  sidebar.style.display = show ? 'block' : 'none';
+
+  elements.showSideBarBtn.style.display = show ? 'none' : 'block';
+  elements.hideSideBarBtn.style.display = show ? 'block' : 'none';
 }
 
 function toggleTheme() {
- 
+ const isLightTheme = document.body.classList.toggle('light-theme');
+ localStorage.setItem('light-theme', isLightTheme ? 'enabled' : 'disabled');
 }
 
 
 
 function openEditTaskModal(task) {
   // Set task details in modal inputs
-  
+  const titleInput =  document.getElementById('edit-task-title-input'); 
+  const descriptionInput = document.getElementById('edit-task-desc-input');
+  const statusInput = document.getElementById('edit-select-status');
+  titleInput.value = task.title;
+  descriptionInput.value = task.description;
+  statusInput.value = task.status;
 
   // Get button elements from the task modal
-
-
+  const saveChangesBtn = document.getElementById('save-task-changes-btn');
+  const cancelChangesBtn = document.getElementById('cancel-edit-btn')
+  const deleteTaskBtn = document.getElementById('delete-task-btn')
   // Call saveTaskChanges upon click of Save Changes button
- 
+  saveChangesBtn.onclick = () => saveTaskChanges(task.id);
 
   // Delete task using a helper function and close the task modal
-
+  deleteTaskBtn.onclick = () => {
+    deleteTask(task.id);
+    toggleModal(false,elements.editTaskModal);
+    refreshTasksUI();
+  };
 
   toggleModal(true, elements.editTaskModal); // Show the edit task modal
 }
 
 function saveTaskChanges(taskId) {
   // Get new user inputs
-  
-
+  const titleInput = document.getElementById('edit-task-title');
+  const descriptionInput = document.getElementById('edit-task-description');
+  const statusInput = document.getElementById('edit-select-status')
   // Create an object with the updated task details
-
+  const updatedTask = {
+    id: taskId,
+    title: titleInput.value,
+    description: descriptionInput.value,
+    status: statusInput.value,
+    board: activeBoard
+  };
 
   // Update task using a hlper functoin
- 
+  const updatedTasks = putTask(taskId, updatedTask);
+  if(updatedTask) {
+    refreshTasksUI()
+    toggleModal(false, elements.editTaskModal);
+  }
 
   // Close the modal and refresh the UI to reflect the changes
 
