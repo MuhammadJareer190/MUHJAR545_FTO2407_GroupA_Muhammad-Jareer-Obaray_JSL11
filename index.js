@@ -15,7 +15,7 @@ function initializeData() {
     console.log('Data already exists in localStorage');
   }
 }
-activeBoard
+
 // TASK: Get elements from the DOM 
 const elements = {
   headerBoardName: document.getElementById('header-board-name'),
@@ -236,6 +236,7 @@ function openEditTaskModal(task) {
   const titleInput =  document.getElementById('edit-task-title-input'); 
   const descriptionInput = document.getElementById('edit-task-desc-input');
   const statusInput = document.getElementById('edit-select-status');
+  
   titleInput.value = task.title;
   descriptionInput.value = task.description;
   statusInput.value = task.status;
@@ -245,9 +246,11 @@ function openEditTaskModal(task) {
   const cancelChangesBtn = document.getElementById('cancel-edit-btn')
   const deleteTaskBtn = document.getElementById('delete-task-btn')
   // Call saveTaskChanges upon click of Save Changes button
+  saveChangesBtn.onclick = null;
   saveChangesBtn.onclick = () => saveTaskChanges(task.id);
 
   // Delete task using a helper function and close the task modal
+  deleteTaskBtn.onclick = null;
   deleteTaskBtn.onclick = () => {
     deleteTask(task.id);
     toggleModal(false,elements.editTaskModal);
@@ -259,21 +262,19 @@ function openEditTaskModal(task) {
 
 function saveTaskChanges(taskId) {
   // Get new user inputs
-  const titleInput = document.getElementById('edit-task-title');
-  const descriptionInput = document.getElementById('edit-task-description');
-  const statusInput = document.getElementById('edit-select-status')
+  const updatedTitle = document.getElementById('edit-task-title-input');
+  const updatedDescription = document.getElementById('edit-task-description-input');
+  const updatedStatus = document.getElementById('edit-select-status')
   // Create an object with the updated task details
-  const updatedTask = {
-    id: taskId,
-    title: titleInput.value,
-    description: descriptionInput.value,
-    status: statusInput.value,
-    board: activeBoard
+  const updatedField = {
+    title: updatedTitle.value,
+    description: updatedDescription.value,
+    status: updatedStatus.value,
   };
 
   // Update task using a hlper functoin
-  const updatedTasks = putTask(taskId, updatedTask);
-  if(updatedTask) {
+  const updatedTasks = patchTask(taskId, updatedField);
+  if(updatedTasks) {
     refreshTasksUI()
     toggleModal(false, elements.editTaskModal);
   }
