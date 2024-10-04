@@ -197,6 +197,12 @@ function toggleModal(show, modal = elements.modalWindow) {
 
 function addTask(event) {
   event.preventDefault(); 
+  // ADDED VALIDATION TO ENSURE THE TITLE IS MANDATORY
+  const titleInput = document.getElementById('title-input').value;
+  if (!titleInput) {
+    alert('Task title is required');
+    return;
+  }
 
   //Assign user input to the task object
     const task = {
@@ -243,18 +249,17 @@ function openEditTaskModal(task) {
 
   // Get button elements from the task modal
   const saveChangesBtn = document.getElementById('save-task-changes-btn');
-  const cancelChangesBtn = document.getElementById('cancel-edit-btn')
   const deleteTaskBtn = document.getElementById('delete-task-btn')
   // Call saveTaskChanges upon click of Save Changes button
-  saveChangesBtn.onclick = null;
   saveChangesBtn.onclick = () => saveTaskChanges(task.id);
 
   // Delete task using a helper function and close the task modal
-  deleteTaskBtn.onclick = null;
   deleteTaskBtn.onclick = () => {
+    if (confirm('are you sure you want to delete this task?')) {
     deleteTask(task.id);
     toggleModal(false,elements.editTaskModal);
     refreshTasksUI();
+    }
   };
 
   toggleModal(true, elements.editTaskModal); // Show the edit task modal
@@ -262,25 +267,19 @@ function openEditTaskModal(task) {
 
 function saveTaskChanges(taskId) {
   // Get new user inputs
-  const updatedTitle = document.getElementById('edit-task-title-input');
-  const updatedDescription = document.getElementById('edit-task-description-input');
-  const updatedStatus = document.getElementById('edit-select-status')
-  // Create an object with the updated task details
-  const updatedField = {
-    title: updatedTitle.value,
-    description: updatedDescription.value,
-    status: updatedStatus.value,
-  };
-
-  // Update task using a hlper functoin
-  const updatedTasks = patchTask(taskId, updatedField);
-  if(updatedTasks) {
-    refreshTasksUI()
-    toggleModal(false, elements.editTaskModal);
+  const updatedTasks = {
+    id: taskId, 
+    title: document.getElementById('edit-task-title-input').value,
+    description: document.getElementById('edit-task-description-input').value,
+    status:  document.getElementById('edit-select-status').value,
   }
+  // Create an object with the updated task details
+  
+  // Update task using a hlper functoin
+  patchTask(taskId, updatedTasks);
 
   // Close the modal and refresh the UI to reflect the changes
-
+  toggleModal(false, elements.editTaskModal);
   refreshTasksUI();
 }
 
@@ -291,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function init() {
+  initializeData()
   setupEventListeners();
   const showSidebar = localStorage.getItem('showSideBar') === 'true';
   toggleSidebar(showSidebar);
